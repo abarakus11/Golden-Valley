@@ -63,9 +63,18 @@
   .brand {
     display: flex;
     align-items: center;
-    gap: 16px;
-    text-align: center;
-    display: none;
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  .brand-logo {
+    width: 220px;
+    max-width: 28vw;
+    height: auto;
+    display: block;
+    object-fit: contain;
   }
   .brand-text h1 {
     font-family: 'Montserrat', sans-serif;
@@ -513,10 +522,7 @@
 <header>
   <div class="header-top">
     <div class="brand">
-      <div class="brand-text">
-        <h1>GOLDEN VALLEY</h1>
-        <p>DCF Model REV04 · Produção de Laticínios · Base: Jan 2026 · Lucro Real</p>
-      </div>
+      <img class="brand-logo" src="https://cdn.discordapp.com/attachments/1389951212295815299/1509224475986624614/LOGO_SOMENTE_ESCRITA_GOLDEN_VALLEY.png?ex=6a186653&is=6a1714d3&hm=4e13eb40dfc41e6628b294a275c48e168bb85964b5f04d33e451cc80aa7164e1&" alt="Golden Valley">
     </div>
     <div class="header-kpis">
       <div class="kpi-item">
