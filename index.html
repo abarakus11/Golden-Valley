@@ -546,14 +546,14 @@
     </div>
   </div>
   <nav class="nav-tabs">
-    <button class="tab-btn active" onclick="switchTab('dashboard')">Dashboard</button>
-    <button class="tab-btn" onclick="switchTab('receita')">Receita</button>
-    <button class="tab-btn" onclick="switchTab('dre')">DRE</button>
-    <button class="tab-btn" onclick="switchTab('fcl')">Fluxo de Caixa Livre</button>
-    <button class="tab-btn" onclick="switchTab('valuation')">Valuation</button>
-    <button class="tab-btn" onclick="switchTab('wacc')">WACC & ROIC</button>
-    <button class="tab-btn" onclick="switchTab('balanco')">Balanço</button>
-    <button class="tab-btn" onclick="switchTab('premissas')">Premissas</button>
+    <button class="tab-btn active" onclick="switchTab('dashboard', event)">Dashboard</button>
+    <button class="tab-btn" onclick="switchTab('receita', event)">Receita</button>
+    <button class="tab-btn" onclick="switchTab('dre', event)">DRE</button>
+    <button class="tab-btn" onclick="switchTab('fcl', event)">Fluxo de Caixa Livre</button>
+    <button class="tab-btn" onclick="switchTab('valuation', event)">Valuation</button>
+    <button class="tab-btn" onclick="switchTab('wacc', event)">WACC & ROIC</button>
+    <button class="tab-btn" onclick="switchTab('balanco', event)">Balanço</button>
+    <button class="tab-btn" onclick="switchTab('premissas', event)">Premissas</button>
   </nav>
 </header>
 
@@ -1430,11 +1430,19 @@ new Chart(document.getElementById('chart-macro'), {
 });
 
 // ── Tab switching ──
-function switchTab(id) {
+function switchTab(id, evt) {
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('tab-' + id).classList.add('active');
-  event.target.classList.add('active');
+  if (evt?.target) evt.target.classList.add('active');
+
+  // Corrige renderização de gráficos ao trocar de abas ocultas/visíveis.
+  requestAnimationFrame(() => {
+    Object.values(Chart.instances || {}).forEach((chart) => {
+      chart.resize();
+      chart.update('none');
+    });
+  });
 }
 </script>
 </body>
