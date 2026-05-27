@@ -1108,6 +1108,13 @@ Chart.defaults.animation = {
     return delay;
   }
 };
+Chart.defaults.animations = {
+  y: {
+    from: 0,
+    duration: 1700,
+    easing: 'easeOutQuart'
+  }
+};
 
 function gridLines() {
   return { color: 'rgba(255,255,255,0.07)', drawBorder: false };
@@ -1438,7 +1445,10 @@ function switchTab(id, evt) {
 
   // Corrige renderização de gráficos ao trocar de abas ocultas/visíveis.
   requestAnimationFrame(() => {
-    Object.values(Chart.instances || {}).forEach((chart) => {
+    const activePanel = document.getElementById('tab-' + id);
+    activePanel.querySelectorAll('canvas').forEach((canvas) => {
+      const chart = Chart.getChart(canvas);
+      if (!chart) return;
       chart.resize();
       chart.reset();
       chart.update();
