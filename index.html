@@ -241,16 +241,6 @@
     transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
   }
 
-  .chart-card::after {
-    content: '';
-    position: absolute;
-    inset: -140% -50%;
-    background: radial-gradient(circle, rgba(201,168,76,0.13), rgba(76,184,201,0.04) 42%, transparent 70%);
-    transform: translateY(0);
-    animation: chartAura 9s ease-in-out infinite;
-    pointer-events: none;
-  }
-
   .chart-card:hover {
     border-color: rgba(201,168,76,0.35);
     box-shadow: 0 20px 48px rgba(0,0,0,0.5), 0 0 28px rgba(201,168,76,0.12);
@@ -295,12 +285,6 @@
 
   .chart-wrap canvas {
     filter: drop-shadow(0 6px 16px rgba(0,0,0,0.3));
-  }
-
-  @keyframes chartAura {
-    0% { transform: translate3d(-6%, -4%, 0) scale(1); opacity: 0.5; }
-    50% { transform: translate3d(5%, 6%, 0) scale(1.06); opacity: 0.85; }
-    100% { transform: translate3d(-6%, -4%, 0) scale(1); opacity: 0.5; }
   }
 
   /* ── TABLE ── */
@@ -1114,61 +1098,6 @@ Chart.defaults.animation = {
   }
 };
 
-const subtleMotionPlugin = {
-  id: 'subtleMotionPlugin',
-  afterInit(chart) {
-    if (!chart.options?.plugins?.subtleMotionPlugin?.enabled) return;
-    if (chart.$motionLoop) return;
-
-    // Guarda a série original para não acumular drift a cada frame.
-    chart.$baseData = chart.data.datasets.map(ds =>
-      Array.isArray(ds.data)
-        ? ds.data.map(v => (typeof v === 'number' ? v : null))
-        : null
-    );
-
-    const step = (ts) => {
-      const t = ts / 1000;
-      chart.$motionPhase = ((chart.$motionPhase || 0) + 0.6) % 360;
-      const motionCfg = chart.options?.plugins?.subtleMotionPlugin || {};
-      const motionStrength = typeof motionCfg.strength === 'number' ? motionCfg.strength : 1;
-
-      chart.data.datasets.forEach((ds, dsi) => {
-        const base = chart.$baseData?.[dsi];
-        if (!base) return;
-
-        const localType = ds.type || chart.config.type;
-        const isBar = localType === 'bar';
-        const isLine = localType === 'line';
-        if (!isBar && !isLine) return;
-
-        const ampFactor = (isBar ? 0.014 : 0.01) * motionStrength;
-        const minAmp = isBar ? 1.6 : 0.9;
-        const speed = (isBar ? 2.1 : 1.8) * (0.75 + motionStrength * 0.35);
-
-        ds.data = base.map((v, i) => {
-          if (v === null) return null;
-          const amp = Math.max(Math.abs(v) * ampFactor, minAmp);
-          return v + Math.sin(t * speed + i * 0.9 + dsi * 0.6) * amp;
-        });
-      });
-
-      chart.update('none');
-      chart.$motionLoop = requestAnimationFrame(step);
-    };
-
-    chart.$motionLoop = requestAnimationFrame(step);
-  },
-  beforeDestroy(chart) {
-    if (chart.$motionLoop) {
-      cancelAnimationFrame(chart.$motionLoop);
-      chart.$motionLoop = null;
-    }
-  }
-};
-
-Chart.register(subtleMotionPlugin);
-
 function gridLines() {
   return { color: 'rgba(255,255,255,0.07)', drawBorder: false };
 }
@@ -1213,13 +1142,12 @@ new Chart(document.getElementById('chart-receita-dash'), {
         yAxisID: 'y1',
         tension: 0.4,
         borderDash: [6, 5],
-        borderDashOffset: ctx => -(ctx.chart.$motionPhase || 0) * 0.08,
       }
     ]
   },
   options: {
     responsive: true, maintainAspectRatio: false,
-    plugins: { subtleMotionPlugin: { enabled: true, strength: 2.8 }, legend: { labels: { font: { size: 11 } } } },
+    plugins: { legend: { labels: { font: { size: 11 } } } },
     scales: {
       x: { grid: gridLines() },
       y: { grid: gridLines(), ticks: { callback: v => v+' Mi', font: { size: 10 } } },
@@ -1235,12 +1163,12 @@ new Chart(document.getElementById('chart-ebitda-dash'), {
     labels: anos,
     datasets: [
       { label: 'EBITDA (R$ Mi)', data: ebitda, backgroundColor: 'rgba(62,207,142,0.7)', borderColor: '#3ecf8e', borderWidth: 1, borderRadius: 4, yAxisID: 'y' },
-      { label: 'Margem EBITDA %', data: margemEbitda, type: 'line', borderColor: '#c9a84c', backgroundColor: 'transparent', pointBackgroundColor: '#c9a84c', borderWidth: 2, pointRadius: 4, yAxisID: 'y1', tension: 0.4, borderDash: [6, 5], borderDashOffset: ctx => -(ctx.chart.$motionPhase || 0) * 0.08 }
+      { label: 'Margem EBITDA %', data: margemEbitda, type: 'line', borderColor: '#c9a84c', backgroundColor: 'transparent', pointBackgroundColor: '#c9a84c', borderWidth: 2, pointRadius: 4, yAxisID: 'y1', tension: 0.4, borderDash: [6, 5] }
     ]
   },
   options: {
     responsive: true, maintainAspectRatio: false,
-    plugins: { subtleMotionPlugin: { enabled: true }, legend: { labels: { font: { size: 11 } } } },
+    plugins: { legend: { labels: { font: { size: 11 } } } },
     scales: {
       x: { grid: gridLines() },
       y: { grid: gridLines(), ticks: { callback: v => v+' Mi', font: { size: 10 } } },
@@ -1265,7 +1193,7 @@ new Chart(document.getElementById('chart-fcl-dash'), {
   },
   options: {
     responsive: true, maintainAspectRatio: false,
-    plugins: { subtleMotionPlugin: { enabled: true }, legend: { display: false } },
+    plugins: { legend: { display: false } },
     scales: {
       x: { grid: gridLines() },
       y: { grid: gridLines(), ticks: { callback: v => v+' Mi', font: { size: 10 } } }
@@ -1289,12 +1217,11 @@ new Chart(document.getElementById('chart-caixa-dash'), {
       fill: true,
       tension: 0.4,
       borderDash: [7, 5],
-      borderDashOffset: ctx => -(ctx.chart.$motionPhase || 0) * 0.08,
     }]
   },
   options: {
     responsive: true, maintainAspectRatio: false,
-    plugins: { subtleMotionPlugin: { enabled: true }, legend: { display: false } },
+    plugins: { legend: { display: false } },
     scales: {
       x: { grid: gridLines() },
       y: { grid: gridLines(), ticks: { callback: v => v+' Mi', font: { size: 10 } } }
@@ -1314,7 +1241,7 @@ new Chart(document.getElementById('chart-receita-proj'), {
   },
   options: {
     responsive: true, maintainAspectRatio: false,
-    plugins: { subtleMotionPlugin: { enabled: true }, legend: { labels: { font: { size: 11 } } } },
+    plugins: { legend: { labels: { font: { size: 11 } } } },
     scales: {
       x: { grid: gridLines(), stacked: true },
       y: { grid: gridLines(), stacked: true, ticks: { callback: v => v+' Mi', font: { size: 10 } } }
@@ -1336,7 +1263,7 @@ new Chart(document.getElementById('chart-dre'), {
   },
   options: {
     responsive: true, maintainAspectRatio: false,
-    plugins: { subtleMotionPlugin: { enabled: true }, legend: { labels: { font: { size: 11 } } } },
+    plugins: { legend: { labels: { font: { size: 11 } } } },
     scales: {
       x: { grid: gridLines() },
       y: { grid: gridLines(), ticks: { callback: v => v+' Mi', font: { size: 10 } } }
@@ -1368,13 +1295,12 @@ new Chart(document.getElementById('chart-fcl-full'), {
         borderWidth: 2,
         tension: 0.4,
         borderDash: [7, 5],
-        borderDashOffset: ctx => -(ctx.chart.$motionPhase || 0) * 0.08,
       }
     ]
   },
   options: {
     responsive: true, maintainAspectRatio: false,
-    plugins: { subtleMotionPlugin: { enabled: true }, legend: { labels: { font: { size: 11 } } } },
+    plugins: { legend: { labels: { font: { size: 11 } } } },
     scales: {
       x: { grid: gridLines() },
       y: { grid: gridLines(), ticks: { callback: v => v+' Mi', font: { size: 10 } } }
@@ -1433,12 +1359,12 @@ new Chart(document.getElementById('chart-roic'), {
     labels: anos,
     datasets: [
       { label: 'ROIC (%)', data: roic, backgroundColor: 'rgba(62,207,142,0.7)', borderColor: '#3ecf8e', borderWidth: 1, borderRadius: 4, yAxisID: 'y' },
-      { label: 'WACC (%)', data: wacc, type: 'line', borderColor: '#e05c5c', backgroundColor: 'transparent', pointRadius: 3, borderWidth: 2, yAxisID: 'y', borderDash: [4,3], borderDashOffset: ctx => -(ctx.chart.$motionPhase || 0) * 0.08 }
+      { label: 'WACC (%)', data: wacc, type: 'line', borderColor: '#e05c5c', backgroundColor: 'transparent', pointRadius: 3, borderWidth: 2, yAxisID: 'y', borderDash: [4,3] }
     ]
   },
   options: {
     responsive: true, maintainAspectRatio: false,
-    plugins: { subtleMotionPlugin: { enabled: true }, legend: { labels: { font: { size: 11 } } } },
+    plugins: { legend: { labels: { font: { size: 11 } } } },
     scales: {
       x: { grid: gridLines() },
       y: { grid: gridLines(), ticks: { callback: v => v+'%', font: { size: 10 } } }
@@ -1463,7 +1389,7 @@ new Chart(document.getElementById('chart-balanco'), {
   },
   options: {
     responsive: true, maintainAspectRatio: false,
-    plugins: { subtleMotionPlugin: { enabled: true }, legend: { labels: { font: { size: 11 } } } },
+    plugins: { legend: { labels: { font: { size: 11 } } } },
     scales: {
       x: { grid: gridLines() },
       y: { grid: gridLines(), ticks: { callback: v => v+' Mi', font: { size: 10 } } }
