@@ -1098,7 +1098,7 @@ Chart.defaults.plugins.tooltip.bodyColor = '#e8edf4';
 Chart.defaults.plugins.tooltip.padding = 10;
 
 Chart.defaults.animation = {
-  duration: 1300,
+  duration: 1700,
   easing: 'easeOutQuart',
   delay(ctx) {
     let delay = 0;
@@ -1440,7 +1440,8 @@ function switchTab(id, evt) {
   requestAnimationFrame(() => {
     Object.values(Chart.instances || {}).forEach((chart) => {
       chart.resize();
-      chart.update('none');
+      chart.reset();
+      chart.update();
     });
   });
 }
