@@ -1,0 +1,7 @@
+﻿# Sistema
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Arquivos locais
+*.tmp
